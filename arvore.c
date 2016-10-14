@@ -145,10 +145,69 @@ link rotR(ARVORE a, link h) {
   return x;
 }
 
-#if 0
-void remover (ARVORE a, int key);
-void removerNo (ARVORE a, link node);
-void destroiArvore(ARVORE a);
-#endif 
+void remover (ARVORE a, int key){
+  link l = a->raiz;
+  link f;
+  int pai = 0;
+  while(pai != 1){
+    if(l->key > key){
+      if(l->left->key == key){
+        pai = 1;
+        f = l->left;
+      } else{
+          pai = 0;
+          l = l->left;
+      }
+    } else if(l->key < key){
+      if(l->right->key == key){
+        pai = 1;
+        f = l->right;
+      } else{
+          pai = 0;
+          l = l->right;
+      }
+    }
+  }
+  
+  removerNo(a, l, f);
+}
 
+void removerNo (ARVORE a, link node, link filho){
+  while(filho->left != a->z || filho->right != a->z){    
+     if(filho->left == a->z){
+        node = rotL(a, filho);
+        filho = node->left;
+      } else if(filho->right == a->z){
+        node = rotL(a, filho);
+        filho = node->right;
+      } else{
+        filho = rotR(a, filho);
+        filho = filho->right;
+        filho = rotL(a, filho);
+        node = filho;
+        filho = filho->left;
+     }
+  }
+  
+  if(node->left->key == filho->key){
+      node->left = a->z;
+    } else if(node->right->key == filho->key){
+      node->right = a->z 
+    }
+    free(filho);
+}
 
+void destroiArvore(ARVORE a){
+  while(a->raiz != a->z){
+    if(a->raiz->right == a->z){
+      remover(a, a->raiz->left->key);
+      a->raiz = a->raiz->left;
+    }else if(a->raiz->left == a->z){
+      remover(a, a->raiz->right->key);
+      a->raiz = a->raiz->right;
+    } else{
+      remover(a, a->raiz->key);
+      a->raiz = a->z;
+    }
+  }
+}
