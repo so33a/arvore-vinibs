@@ -4,7 +4,7 @@
 #include "fila.h"
 
 ARVORE novaArvore() {
-  ARVORE a = malloc(sizeof(struct arvore));  
+  ARVORE a = malloc(sizeof(struct arvore));
   a->z = malloc(sizeof(struct node));
   a->raiz = a->z;
   a->raiz->left = a->raiz->right = a->z;
@@ -26,9 +26,9 @@ int contaNosR (ARVORE a, link h) {
 }
 
 int contaParesR (ARVORE a, link h) {
-  if(h == a->z) 
+  if(h == a->z)
     return 0;
-  if (h->key %2 == 0) 
+  if (h->key %2 == 0)
     return 1 + contaParesR(a, h->left) + contaParesR(a, h->right);
   else
     return  contaParesR(a, h->left) + contaParesR(a, h->right);
@@ -59,15 +59,55 @@ void imprimeEmOrdemR (ARVORE a, link h) {
 }
 
 void imprimeEmOrdem (ARVORE a) {
-   imprimeEmOrdemR(a, a->raiz); 
+   imprimeEmOrdemR(a, a->raiz);
 }
 
 link buscaR (ARVORE a, link h, int key) {
-  if(h == a->z) return NULL;
+  if(h == a->z) return h;
   if(h->key == key) return h;
-  if( h->key < key) 
+  if( h->key < key)
     return buscaR(a, h->right, key);
   return buscaR(a, h->left, key);
+}
+link buscaRP (ARVORE a, link h, int key){
+  link atual = h;
+  link pai;
+
+  if(atual == a->z){
+    // Árvore vazia
+    return a->z;
+
+  } else{
+    if(atual->key == key){
+    	// Valor buscado é a raiz atual
+      return atual;
+
+    } else{
+    	if(atual->key > key){
+	  		// Valor buscado à esquerda da raiz atual
+	  		if(atual->left->key == key){
+	  			pai = atual;
+	  			return pai;
+
+	  		} else{
+	  			atual = atual->left;
+	  			buscaRP(a, atual, key);
+	  		}
+      } else{
+        if(atual->right->key == key){
+	  			pai = atual;
+	  			return pai;
+
+	  		} else{
+	  			atual = atual->right;
+	  			buscaRP(a, atual, key);
+	  		}
+      }
+  	}
+  }
+}
+link buscaPai (ARVORE a, int key){
+    buscaRP(a,a->raiz,key);
 }
 
 
@@ -83,22 +123,22 @@ link novoNo(int key, link l, link r) {
   return x;
 }
 link inserirR (ARVORE a, link h, int key) {
-  if(h == a->z) 
-    return novoNo(key, a->z, a->z); 
+  if(h == a->z)
+    return novoNo(key, a->z, a->z);
   if(h->key == key) return h;
-  if(h->key < key) 
+  if(h->key < key)
     h->right = inserirR(a, h->right, key);
-  else 
+  else
     h->left = inserirR(a, h->left, key);
   return h;
 }
 link inserirT (ARVORE a, link h, int key) {
-  if(h == a->z) 
-    return novoNo(key, a->z, a->z); 
+  if(h == a->z)
+    return novoNo(key, a->z, a->z);
   if(h->key == key) return h;
   if(h->key < key)  {
     h->right = inserirT(a, h->right, key);
-    h = rotL(a, h);
+    h =     (a, h);
   }
   else {
     h->left = inserirT(a, h->left, key);
@@ -122,6 +162,7 @@ void imprimeEmLargura (ARVORE a) {
   while (f->primeiro != NULL) {
     aux = desenfilar(f);
     printf ("%d ", aux->key);
+
     if (aux->left != a->z)  {
       enfilar (f,aux->left);
     }
@@ -136,7 +177,7 @@ link rotL(ARVORE a, link h) {
   link x = h->right;
   h->right = x->left;
   x->left = h;
-  return x; 
+  return x;
 }
 link rotR(ARVORE a, link h) {
   link x = h->left;
@@ -145,69 +186,74 @@ link rotR(ARVORE a, link h) {
   return x;
 }
 
+
 void remover (ARVORE a, int key){
-  link l = a->raiz;
-  link f;
-  int pai = 0;
-  while(pai != 1){
-    if(l->key > key){
-      if(l->left->key == key){
-        pai = 1;
-        f = l->left;
-      } else{
-          pai = 0;
-          l = l->left;
-      }
-    } else if(l->key < key){
-      if(l->right->key == key){
-        pai = 1;
-        f = l->right;
-      } else{
-          pai = 0;
-          l = l->right;
-      }
-    }
-  }
-  
-  removerNo(a, l, f);
+  link atual;
+  link pai = buscaPai(a, key);
+  link filho = busca(a, key);
+  if(pai == a->z){
+  	printf("O valor buscado nao existe na arvore\n");
+  } else{
+	  printf("\nPai %d\nFilho %d\n\n", pai->key, filho->key);
+
+	  if(filho->left != a->z && filho->right != a->z){ 	
+	  	// Tem dois filhos, o filho.
+	  	atual = filho->right;
+	  	if(atual->left != a->z){
+		  	while(atual->left != a->z){
+		  		atual = atual->left;
+		  	}
+
+		  	link pai2 = buscaPai(a, atual->key);
+		  	if(filho->right != a->z){
+		  		pai2->left = atual->right;
+		  	} else{
+		  		pai2->left = a->z;	  		
+		  	}
+
+		  	filho->key = atual->key;
+		  	free(atual);
+
+		  } else{
+		  	link aux = filho->right;
+		  	filho->key = aux->key;
+		  	filho->right = aux->right;
+		  	free(aux);
+		  }		
+	  } else if(filho->left != a->z){
+	  	// Filho está à esquerda
+	  	if(filho->key < pai->key){
+	  		pai->left = filho->left;
+	  	} else{
+	  		pai->right = filho->left;
+	  	}
+	  } else if(filho->right != a->z){
+	  	// Filho à direita
+	  	if(filho->key < pai->key){
+	  		pai->left = filho->right;
+	  	} else{
+	  		pai->right = filho->right;
+	  	}
+	  } else{
+	  	// Nó folha
+			if(filho->key < pai->key){
+				pai->left = a->z;
+			} else{
+				pai->right = a->z;
+			}
+	  }
+	}
 }
 
-void removerNo (ARVORE a, link node, link filho){
-  while(filho->left != a->z || filho->right != a->z){    
-     if(filho->left == a->z){
-        node = rotL(a, filho);
-        filho = node->left;
-      } else if(filho->right == a->z){
-        node = rotL(a, filho);
-        filho = node->right;
-      } else{
-        filho = rotR(a, filho);
-        filho = filho->right;
-        filho = rotL(a, filho);
-        node = filho;
-        filho = filho->left;
-     }
-  }
-  
-  if(node->left->key == filho->key){
-      node->left = a->z;
-    } else if(node->right->key == filho->key){
-      node->right = a->z 
-    }
-    free(filho);
-}
 
+#if 0
 void destroiArvore(ARVORE a){
-  while(a->raiz != a->z){
-    if(a->raiz->right == a->z){
-      remover(a, a->raiz->left->key);
-      a->raiz = a->raiz->left;
-    }else if(a->raiz->left == a->z){
-      remover(a, a->raiz->right->key);
-      a->raiz = a->raiz->right;
-    } else{
-      remover(a, a->raiz->key);
-      a->raiz = a->z;
+    link aux = a->head;
+    if(a->head->left =! a->z){
+        while(   
     }
-  }
 }
+
+void removerNo (ARVORE a, link pai);
+void destroiArvore(ARVORE a);
+#endif
